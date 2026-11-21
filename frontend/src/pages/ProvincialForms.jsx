@@ -1,0 +1,39 @@
+import {useState} from 'react'
+import {useQuery} from '@tanstack/react-query'
+import {FormField,Modal,fieldClass,primaryButton,secondaryButton} from '../components/FinanceUI'
+import {ErrorBanner} from '../remittances/UI'
+import {AfghanDateInput} from '../components/AfghanDate'
+import {businessToday} from '../utils/calendar'
+import {shamsi,parseAmount} from '../utils/remittance'
+import {presentNumber} from '../utils/presentation'
+import {provincialRequest as api} from '../provincialApi'
+import {provincialStatuses as statuses} from '../provincialLabels'
+import {defaultOptions} from '../remittances/config'
+import ProvincialPartyDetails from '../components/ProvincialPartyDetails'
+import AgencySettlementAmounts from '../components/AgencySettlementAmounts'
+const units=defaultOptions.currencies
+const fieldErrorClass=error=>`${fieldClass} ${error?'!border-red-500 !bg-red-50':''}`
+export function CurrencySelect({id,value,onChange,optional=false}){return <select id={id} className={fieldClass} value={value||''} onChange={e=>onChange(e.target.value)}>{optional&&<option value="">همه / انتخاب اختیاری</option>}{units.map(unit=><option key={unit}>{unit}</option>)}</select>}
+export function RepresentativeForm({province,agencies,onClose,onSaved,workspace='provincial'}){
+ const [data,setData]=useState({name:'',phone:'',agency:''}),[error,setError]=useState(null),[busy,setBusy]=useState(false)
+ async function submit(e){e.preventDefault();setBusy(true);try{await api(`/provinces/${province}/accounts/`,{...data,workspace,agency:data.agency||undefined});await onSaved()}catch(error){setError(error)}finally{setBusy(false)}}
+ return <Modal title="ایجاد حساب نماینده در ولایت" onClose={onClose}><form onSubmit={submit} className="space-y-4"><FormField label="نام حساب یا فرد" id="rep-name"><input id="rep-name" required maxLength={200} className={fieldClass} value={data.name} onChange={e=>setData({...data,name:e.target.value})}/></FormField><FormField label="شماره تماس" id="rep-phone"><input id="rep-phone" type="tel" className={fieldClass} value={data.phone} onChange={e=>setData({...data,phone:e.target.value})}/></FormField><FormField label="نمایندگی موجود؛ اختیاری" id="rep-agency"><select id="rep-agency" className={fieldClass} value={data.agency} onChange={e=>setData({...data,agency:e.target.value})}><option value="">ایجاد نمایندگی همراه با حساب</option>{agencies.map(row=><option key={row.id} value={row.id}>{row.name}</option>)}</select></FormField><ErrorBanner error={error}/><button disabled={busy} className={primaryButton}>ذخیره حساب</button></form></Modal>
+}
+
+export {default as ProvincialRemittanceForm} from '../components/SimpleProvincialForm'
+
+export function ManualProfitFields({value,currency,onValue,onCurrency}){return <><FormField label="مفاد؛ دستی و اختیاری" id="manual-profit"><input id="manual-profit" inputMode="decimal" className={fieldClass} value={value??''} placeholder="خالی با صفر متفاوت است" onChange={e=>onValue(e.target.value)}/></FormField><FormField label="واحد مفاد" id="manual-profit-unit"><CurrencySelect optional id="manual-profit-unit" value={currency} onChange={onCurrency}/></FormField></>}
+export function ProvincialPaymentForm({row,onClose,onSaved}){
+ const [amount,setAmount]=useState(''),[date,setDate]=useState(businessToday),[error,setError]=useState(null),[busy,setBusy]=useState(false),[key,setKey]=useState(()=>crypto.randomUUID())
+ const history=useQuery({queryKey:['provincial-payments',row.id],queryFn:()=>api(`/provincial/remittances/${row.id}/payments/`)})
+ const doc=history.data?.remittance||row,currency=doc.conversion.destination||doc.currency
+ return <Modal title={`پرداخت گیرنده — ${row.number}`} onClose={onClose} width="max-w-3xl"><form className="space-y-4" onSubmit={async e=>{e.preventDefault();setBusy(true);try{await api('/ledger/documents/',{request_key:key,account:row.account,agency:row.agency_id,category:'BENEFICIARY_PAYOUT',date,currency,amount:parseAmount(amount),allocations:[{remittance:row.id,amount:parseAmount(amount)}]});await onSaved()}catch(error){setError(error)}finally{setBusy(false)}}}><div className="mb-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800"><ProvincialPartyDetails details={doc.details}/><AgencySettlementAmounts row={doc}/><p>نماینده: {doc.representative_name}</p><p>مفاد دستی: {presentNumber(doc.manual_profit)} {doc.profit_currency||''}</p></div><p>{statuses[doc.beneficiary.status]} · پرداخت‌شده: {presentNumber(doc.beneficiary.paid)} · باقی‌مانده: {presentNumber(doc.beneficiary.outstanding)} {currency}</p><FormField label="تاریخ شمسی" id="beneficiary-date"><AfghanDateInput id="beneficiary-date" required value={date} onChange={e=>{setDate(e.target.value);setKey(crypto.randomUUID())}} className={fieldClass}/></FormField><FormField label={`مقدار پرداخت ${currency}`} id="beneficiary-amount"><input id="beneficiary-amount" required className={fieldClass} value={amount} onChange={e=>{setAmount(e.target.value);setKey(crypto.randomUUID())}}/></FormField><button type="button" className={secondaryButton} onClick={()=>{setAmount(doc.beneficiary.outstanding);setKey(crypto.randomUUID())}}>پرداخت تمام مانده</button><ErrorBanner error={error}/><button disabled={busy||Number(doc.beneficiary.outstanding)<=0} className={primaryButton}>تأیید پرداخت گیرنده</button></form><PaymentHistory rows={history.data?.results||[]}/></Modal>
+}
+function PaymentHistory({rows}){return <section className="mt-5 overflow-x-auto"><h3 className="mb-3 font-bold">تاریخچه پرداخت و تسویه</h3><table className="w-full text-sm"><thead><tr>{['رسید','تاریخ شمسی','نوع','مقدار'].map(label=><th key={label} className="p-2">{label}</th>)}</tr></thead><tbody>{rows.map((entry,index)=><tr key={index} className="border-t"><td className="p-2">{entry.reference}</td><td>{shamsi(entry.date)}</td><td>{entry.purpose==='BENEFICIARY'?'پرداخت گیرنده':'تسویه نماینده'}{entry.reversal_of?' — برگشت':''}</td><td dir="ltr">{presentNumber(entry.amount)} {entry.currency}</td></tr>)}</tbody></table></section>}
+
+export function ProvincialPaymentPicker({workspace,accountId,onClose,onSelect}){
+ const [search,setSearch]=useState('')
+ const customers=useQuery({queryKey:['provincial-payment-customers',workspace,Number(accountId)],queryFn:()=>api(`/provincial/accounts/${accountId}/customer-payments/?workspace=${workspace}`)})
+ const rows=(customers.data?.results||[]).filter(row=>`${row.name} ${row.phone}`.includes(search))
+ return <Modal title="پرداخت مشتری و پیش‌پرداخت" onClose={onClose} width="max-w-5xl"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><p>مشتری را انتخاب کنید یا بدون حوالهٔ آمد، پرداخت جدید ثبت کنید.</p><button className={primaryButton} onClick={()=>onSelect({standalone:true,details:{sender_name:search.trim()}})}>+ پرداخت جدید / بدون حواله</button></div><input aria-label="جستجوی مشتری برای پرداخت" className={fieldClass} value={search} onChange={e=>setSearch(e.target.value)} placeholder="نام یا شماره تماس مشتری"/><ErrorBanner error={customers.error}/><div className="mt-4 overflow-x-auto"><table className="w-full min-w-[750px] text-right text-sm"><thead><tr>{['مشتری','تماس','واحد پول','حواله آمد','حواله رفت','پرداخت‌ها','مانده','وضعیت مشتری','عملیات'].map(label=><th className="p-2" key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={`${row.key}-${row.currency}`} className="border-t"><td className="p-2">{row.name}</td><td>{row.phone||'—'}</td><td>{row.currency}</td>{['incoming','outgoing','paid','balance'].map(key=><td key={key}>{presentNumber(row[key])}</td>)}<td>{row.status}</td><td><button className={primaryButton} onClick={()=>onSelect({standalone:true,details:row.details})}>پرداخت جدید</button></td></tr>)}</tbody></table></div>{customers.isPending?<p role="status">در حال دریافت مشتری‌ها…</p>:!customers.error&&!rows.length&&<p className="py-4">هنوز مشتری‌ای ثبت نشده است؛ با دکمهٔ پرداخت جدید شروع کنید.</p>}</Modal>
+}

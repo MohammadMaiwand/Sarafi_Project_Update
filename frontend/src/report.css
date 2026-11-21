@@ -1,0 +1,27 @@
+.system-report-document{font-family:Tahoma,Arial,sans-serif;color:#172b42;direction:rtl;line-height:1.8;font-size:13px;background:#fff;padding:28px;border:1px solid #dfe5ee;border-radius:18px}
+.system-report-document *{box-sizing:border-box}
+.report-document-header{border-bottom:3px solid #107c69;padding-bottom:18px;margin-bottom:18px}
+.report-document-header>p{font-size:12px;color:#107c69;margin:0}
+.report-document-header h1{font-size:25px;margin:8px 0 15px;color:#10253d}
+.report-meta{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:11px;color:#53677d}
+.report-method{background:#f3f7fa;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:20px}
+.report-method h2{font-size:14px;margin:0 0 6px}
+.report-method ul{margin:0;padding-inline-start:20px;font-size:11px}
+.report-index{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}.report-index a{padding:5px 10px;background:#edf7f4;border-radius:8px;color:#0f695a;font-size:11px;text-decoration:none}
+.report-section{margin:26px 0;scroll-margin-top:180px}
+.report-section>header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:2px solid #cbd5e1;margin-bottom:10px;padding-bottom:8px}
+.report-section h2{font-size:17px;margin:0}.report-section>header>span{font-size:11px;color:#64748b}
+.report-note{font-size:11px;color:#53677d;margin:8px 0 12px}
+.report-totals{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.report-totals>div{min-width:150px;padding:8px 12px;border:1px solid #d7e8e1;border-radius:8px;background:#f3faf6}
+.report-totals span{display:block;font-size:10px;color:#53677d}.report-totals b{display:block;font-size:13px}.report-totals small{font-weight:normal;font-size:10px}
+.report-table-wrap{overflow-x:auto}.system-report-document table{border-collapse:collapse!important;border-spacing:0;width:100%;font-size:11px}
+.system-report-document th{background:#edf3f7;text-align:right;font-weight:bold;white-space:normal!important}
+.system-report-document th,.system-report-document td{border:1px solid #dce4ec;padding:8px!important;vertical-align:top;overflow-wrap:anywhere;height:auto!important;line-height:1.8}
+.system-report-document tbody tr:nth-child(even){background:#f8fafc}.report-money{display:inline-block;white-space:normal;min-width:65px;font-variant-numeric:tabular-nums}.report-money small{font-size:9px}
+.report-detail-row td{background:#fafcfd!important;color:#53677d;font-size:10px}.report-detail-row span{display:inline;white-space:pre-wrap;margin-inline-end:18px;overflow-wrap:anywhere}
+.report-empty{padding:14px;color:#64748b;border:1px dashed #cbd5e1;font-size:12px}
+.report-document-footer{border-top:2px solid #107c69;margin-top:30px;padding-top:18px;font-size:11px;line-height:2.3}
+@media(max-width:640px){.system-report-document{padding:14px}.report-section h2{font-size:15px}.system-report-document table{min-width:750px}.report-totals>div{min-width:130px;flex:1}}
+@page{size:A4 landscape;margin:12mm}
+@media print{html,body{margin:0!important;padding:0!important;background:white!important;color:#172b42!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.system-report-document{padding:0!important;border:0!important;border-radius:0;font-size:10pt}.report-index{display:none}.report-method{break-inside:avoid}.report-document-header{break-inside:avoid}.report-section{margin:6mm 0}.report-section>header{break-after:avoid}.report-note{break-after:avoid}.report-table-wrap{overflow:visible!important}.system-report-document table{min-width:0!important;width:100%!important;font-size:8pt;table-layout:auto}.system-report-document th,.system-report-document td{padding:5px!important;white-space:normal!important}.system-report-document thead{display:table-header-group}.system-report-document tr{break-inside:avoid}.report-detail-row{break-inside:auto!important}.report-detail-row td{white-space:pre-wrap}.report-totals{break-inside:avoid}.report-document-footer{break-inside:avoid}.report-section h2{font-size:12pt}.report-document-header h1{font-size:19pt}}

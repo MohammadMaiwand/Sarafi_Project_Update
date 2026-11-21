@@ -1,0 +1,3 @@
+export const provincialPartyFields={sender_name:'نام فرستنده',sender_father:'نام پدر فرستنده',sender_phone:'شماره تماس فرستنده',sender_id:'تذکره فرستنده',sender_location:'محل فرستنده',recipient_name:'نام گیرنده',recipient_father:'نام پدر گیرنده',recipient_phone:'شماره تماس گیرنده',recipient_id:'تذکره گیرنده',district:'ولسوالی',village:'قریه یا محل دقیق',payment_location:'محل پرداخت',notes:'توضیح'}
+export const partyDetailsPatch=(initial,values)=>Object.fromEntries(Object.entries(values).filter(([key,value])=>value!==(initial[key]||'')))
+export const simplePartyFields={sender_name:'اسم فرستنده',recipient_name:'اسم گیرنده',sender_father:'ولد فرستنده',recipient_father:'ولد گیرنده',recipient_id:'نمبر تذکره',recipient_phone:'شماره تماس'}
